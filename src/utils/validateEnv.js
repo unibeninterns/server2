@@ -8,18 +8,14 @@ const validateEnv = () => {
     PORT: num({ default: 3000 }),
     MONGODB_URI: url(),
     FRONTEND_URL: url(),
-    LOG_LEVEL: str({ choices: ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'] }),
-    JWT_ACCESS_SECRET: str(),
-    JWT_REFRESH_SECRET: str(),
+    LOG_LEVEL: str({
+      choices: ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly'],
+    }),
     SMTP_HOST: str(),
     SMTP_PORT: port(),
     SMTP_USER: str(),
     SMTP_PASS: str(),
     EMAIL_FROM: email(),
-    PASSWORD_PEPPER: str(),
-    ADMIN_NAME: str(),
-    ADMIN_EMAIL: email(),
-    ADMIN_PASSWORD: str(),
     API_URL: url(),
   });
 };
