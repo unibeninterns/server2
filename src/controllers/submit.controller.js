@@ -1,3 +1,4 @@
+// src/controllers/submit.controller.js
 import User from '../model/user.model.js';
 import Proposal from '../model/proposal.model.js';
 import { BadRequestError, NotFoundError } from '../utils/customErrors.js';
@@ -6,9 +7,16 @@ import logger from '../utils/logger.js';
 import emailService from '../services/email.service.js';
 
 class SubmitController {
-  // Submit faculty proposal
-  submitFacultyProposal = asyncHandler(async (req, res) => {
+  // Submit staff proposal
+  submitStaffProposal = asyncHandler(async (req, res) => {
     const {
+      fullName,
+      academicTitle,
+      department,
+      faculty,
+      email,
+      alternativeEmail,
+      phoneNumber,
       projectTitle,
       backgroundProblem,
       researchObjectives,
@@ -17,26 +25,38 @@ class SubmitController {
       workPlan,
       estimatedBudget,
       coInvestigators,
-    } = req.body;
+    } = req.validated.body;
 
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    // Check if user already exists or create new user
+    let user = await User.findOne({ email });
 
     if (!user) {
-      throw new NotFoundError('User not found');
+      user = new User({
+        name: fullName,
+        email,
+        alternativeEmail,
+        userType: 'staff',
+        department,
+        faculty,
+        academicTitle,
+        phoneNumber,
+      });
+
+      await user.save();
+      logger.info(`New staff user created with email: ${email}`);
     }
 
     // Create a new proposal
     const proposal = new Proposal({
-      submitterType: 'faculty',
+      submitterType: 'staff',
       projectTitle,
-      submitter: userId,
+      submitter: user._id,
       problemStatement: backgroundProblem,
       objectives: researchObjectives,
       methodology: methodologyOverview,
       expectedOutcomes,
       workPlan,
-      estimatedBudget: parseFloat(estimatedBudget),
+      estimatedBudget,
       coInvestigators: coInvestigators || [],
     });
 
@@ -58,18 +78,18 @@ class SubmitController {
         process.env.REVIEWER_EMAIL || 'reviewer@example.com',
         user.name,
         projectTitle,
-        'faculty'
+        'staff'
       );
     } catch (error) {
       logger.error('Failed to send notification email:', error);
       // Don't throw error to prevent proposal submission from failing
     }
 
-    logger.info(`Faculty proposal submitted by user: ${user.email}`);
+    logger.info(`Staff proposal submitted by user: ${user.email}`);
 
     res.status(201).json({
       success: true,
-      message: 'Faculty proposal submitted successfully and is under review.',
+      message: 'Staff proposal submitted successfully and is under review.',
       data: { proposalId: proposal._id },
     });
   });
@@ -77,6 +97,14 @@ class SubmitController {
   // Submit master student proposal
   submitMasterStudentProposal = asyncHandler(async (req, res) => {
     const {
+      fullName,
+      matricNumber,
+      programme,
+      department,
+      faculty,
+      email,
+      alternativeEmail,
+      phoneNumber,
       projectTitle,
       problemStatement,
       objectivesOutcomes,
@@ -86,20 +114,33 @@ class SubmitController {
       interdisciplinaryRelevance,
       implementationPlan,
       estimatedBudget,
-    } = req.body;
+    } = req.validated.body;
 
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    // Check if user already exists or create new user
+    let user = await User.findOne({ email });
 
     if (!user) {
-      throw new NotFoundError('User not found');
+      user = new User({
+        name: fullName,
+        email,
+        alternativeEmail,
+        userType: 'master_student',
+        department,
+        faculty,
+        matricNumber,
+        programme,
+        phoneNumber,
+      });
+
+      await user.save();
+      logger.info(`New master student user created with email: ${email}`);
     }
 
     // Create a new proposal
     const proposal = new Proposal({
       submitterType: 'master_student',
       projectTitle,
-      submitter: userId,
+      submitter: user._id,
       problemStatement,
       objectives: objectivesOutcomes,
       methodology: researchApproach,
@@ -109,7 +150,7 @@ class SubmitController {
       },
       interdisciplinaryRelevance,
       implementationTimeline: implementationPlan,
-      estimatedBudget: parseFloat(estimatedBudget),
+      estimatedBudget,
     });
 
     // Handle budget file upload if present
@@ -147,30 +188,17 @@ class SubmitController {
     });
   });
 
-  // Get all proposals for admin
-  getAllProposals = asyncHandler(async (req, res) => {
-    if (req.user.role !== 'admin') {
-      throw new BadRequestError(
-        'You do not have permission to access this resource'
-      );
+  // Get user's proposals by email
+  getUserProposalsByEmail = asyncHandler(async (req, res) => {
+    const { email } = req.params;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundError('User not found');
     }
 
-    const proposals = await Proposal.find()
-      .populate('submitter', 'name email faculty department academicTitle')
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: proposals.length,
-      data: proposals,
-    });
-  });
-
-  // Get user's proposals
-  getUserProposals = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-
-    const proposals = await Proposal.find({ submitter: userId }).sort({
+    const proposals = await Proposal.find({ submitter: user._id }).sort({
       createdAt: -1,
     });
 
@@ -184,7 +212,6 @@ class SubmitController {
   // Get proposal by ID
   getProposalById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const userId = req.user.id;
 
     const proposal = await Proposal.findById(id).populate(
       'submitter',
@@ -193,16 +220,6 @@ class SubmitController {
 
     if (!proposal) {
       throw new NotFoundError('Proposal not found');
-    }
-
-    // Check if user is admin or the proposal submitter
-    if (
-      req.user.role !== 'admin' &&
-      proposal.submitter._id.toString() !== userId
-    ) {
-      throw new BadRequestError(
-        'You do not have permission to access this proposal'
-      );
     }
 
     res.status(200).json({

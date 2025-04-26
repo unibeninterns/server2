@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
-import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import YAML from 'yamljs';
 import compression from 'compression';

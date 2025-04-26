@@ -1,9 +1,10 @@
+// src/model/proposal.model.js
 import mongoose from 'mongoose';
 
 const ProposalSchema = new mongoose.Schema({
   submitterType: {
     type: String,
-    enum: ['faculty', 'master_student'],
+    enum: ['staff', 'master_student'],
     required: [true, 'Submitter type is required'],
   },
   projectTitle: {
@@ -16,7 +17,8 @@ const ProposalSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Submitter is required'],
   },
-  // Fields for both faculty and master students
+
+  // Common fields
   problemStatement: {
     type: String,
     required: [true, 'Problem statement is required'],
@@ -29,20 +31,18 @@ const ProposalSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Methodology is required'],
   },
+
+  // Staff specific fields
   expectedOutcomes: {
     type: String,
-    required: [true, 'Expected outcomes are required'],
   },
   workPlan: {
     type: String,
-    required: [true, 'Work plan is required'],
   },
   estimatedBudget: {
     type: Number,
     required: [true, 'Estimated budget is required'],
   },
-
-  // Faculty specific fields
   coInvestigators: [
     {
       name: String,
@@ -50,6 +50,9 @@ const ProposalSchema = new mongoose.Schema({
       faculty: String,
     },
   ],
+  cvFile: {
+    type: String,
+  },
 
   // Master student specific fields
   innovationImpact: {
@@ -58,14 +61,10 @@ const ProposalSchema = new mongoose.Schema({
   },
   interdisciplinaryRelevance: String,
   implementationTimeline: String,
-
-  // Common fields
-  cvFile: {
-    type: String,
-  },
   budgetFile: {
     type: String,
   },
+
   status: {
     type: String,
     enum: [
@@ -77,25 +76,6 @@ const ProposalSchema = new mongoose.Schema({
     ],
     default: 'submitted',
   },
-  reviewers: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  ],
-  reviewComments: [
-    {
-      reviewer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-      comment: String,
-      date: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
   createdAt: {
     type: Date,
     default: Date.now,

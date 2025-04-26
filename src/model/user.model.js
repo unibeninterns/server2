@@ -1,8 +1,10 @@
+// src/model/user.model.js
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
+    required: [true, 'Name is required'],
     trim: true,
   },
   email: {
@@ -11,21 +13,30 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
+    match: [
+      /^.+@.+\.uniben\.edu$/,
+      'Please provide a valid UNIBEN email address',
+    ],
   },
-  password: {
+  alternativeEmail: {
     type: String,
-    select: false,
+    lowercase: true,
+    trim: true,
+    match: [
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      'Please provide a valid email address',
+    ],
   },
-  role: {
+  userType: {
     type: String,
-    enum: ['admin', 'researcher', 'master_student', 'faculty'],
-    default: 'researcher',
+    enum: ['staff', 'master_student'],
+    required: [true, 'User type is required'],
   },
-  faculty: {
+  department: {
     type: String,
     trim: true,
   },
-  department: {
+  faculty: {
     type: String,
     trim: true,
   },
@@ -44,35 +55,18 @@ const UserSchema = new mongoose.Schema({
   phoneNumber: {
     type: String,
     trim: true,
+    required: [true, 'Phone number is required'],
   },
-  bio: {
-    type: String,
-    trim: true,
-  },
-  title: {
-    type: String,
-    trim: true,
-  },
-  profilePicture: {
-    type: String,
-  },
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  articles: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Article',
-    },
-  ],
   proposals: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Proposal',
     },
   ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-export default mongoose.model('User', UserSchema, 'Users2');
+export default mongoose.model('User', UserSchema, 'Users_2');

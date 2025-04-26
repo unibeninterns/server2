@@ -1,3 +1,4 @@
+// src/routes/submit.routes.js
 import express from 'express';
 import submitController from '../controllers/submit.controller.js';
 import multer from 'multer';
@@ -5,6 +6,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { rateLimiter } from '../middleware/auth.middleware.js';
+import validateRequest from '../middleware/validateRequest.js';
+import {
+  staffProposalSchema,
+  masterStudentProposalSchema,
+} from '../validators/submission.validators.js';
 
 const router = express.Router();
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,9 +19,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Different destinations based on file type
-    if (file.fieldname === 'profilePicture') {
-      cb(null, path.join(__dirname, '../uploads/profiles/'));
-    } else if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
+    if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
       cb(null, path.join(__dirname, '../uploads/documents/'));
     } else {
       cb(null, path.join(__dirname, '../uploads/'));
@@ -27,19 +31,8 @@ export const storage = multer.diskStorage({
 });
 
 export const fileFilter = (req, file, cb) => {
-  // Check file types based on fieldname
-  if (file.fieldname === 'profilePicture') {
-    // Image files only
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(
-        new Error('Invalid file type. Only JPEG, PNG and JPG are allowed.'),
-        false
-      );
-    }
-  } else if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
+  // Check file types
+  if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
     // Document files - PDF, DOC, DOCX
     const allowedTypes = [
       'application/pdf',
@@ -73,19 +66,13 @@ const documentUpload = upload.fields([
 // Apply rate limiting to all submission endpoints
 const submissionRateLimiter = rateLimiter(10, 60 * 60 * 1000); // 10 requests per hour
 
-// Profile completion route (existing)
+// Staff proposal submission route
 router.post(
-  '/complete-profile',
-  upload.single('profilePicture'),
-  submitController.completeProfile
-);
-
-// Faculty proposal submission route
-router.post(
-  '/faculty-proposal',
+  '/staff-proposal',
   submissionRateLimiter,
   documentUpload,
-  submitController.submitFacultyProposal
+  validateRequest(staffProposalSchema),
+  submitController.submitStaffProposal
 );
 
 // Master student proposal submission route
@@ -93,14 +80,12 @@ router.post(
   '/master-proposal',
   submissionRateLimiter,
   documentUpload,
+  validateRequest(masterStudentProposalSchema),
   submitController.submitMasterStudentProposal
 );
 
-// Get all proposals (admin only)
-router.get('/proposals', submitController.getAllProposals);
-
-// Get user's own proposals
-router.get('/my-proposals', submitController.getUserProposals);
+// Get user's proposals by email
+router.get('/proposals/email/:email', submitController.getUserProposalsByEmail);
 
 // Get proposal by ID
 router.get('/proposal/:id', submitController.getProposalById);
