@@ -1,0 +1,179 @@
+openapi: 3.0.0
+info:
+  title: DRID Research Portal API
+  description: |
+    A research management API for DRID
+    Authentication is handled via JWT access tokens and HTTP-only cookie refresh tokens.
+  version: 1.0.0
+  contact:
+    name: DRID Support
+    email: raymondomoyakhi@gmail.com
+
+servers:
+  - url: 'https://production_url/api/v1'
+    description: Production server
+  - url: 'http://localhost:3000/api/v1'
+    description: Development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+          maxLength: 50
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, researcher]
+        faculty:
+          type: string
+        title:
+          type: string
+        profilePicture:
+          type: string
+        isActive:
+          type: boolean
+        lastLogin:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminAuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accessToken:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+
+    ResearcherAuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accessToken:
+          type: string
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            role:
+              type: string
+            faculty:
+              type: string
+            title:
+              type: string
+            profilePicture:
+              type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        code:
+          type: string
+
+paths:
+  /:
+    get:
+      summary: API health check
+      responses:
+        '200':
+          description: API is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /auth/complete-profile/{token}:
+    post:
+      summary: Complete researcher profile after invitation
+      tags:
+        - Authentication
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Invitation token sent to researcher's email
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [name, faculty, bio, title]
+              properties:
+                name:
+                  type: string
+                  description: Researcher's full name
+                faculty:
+                  type: string
+                  description: Faculty or department
+                title:
+                  type: string
+                  description: Academic or professional title
+                bio:
+                  type: string
+                  description: Interests and areas of expertise
+                profilePicture:
+                  type: string
+                  format: binary
+                  description: Profile picture (JPEG, PNG, or JPG, max 5MB)
+      responses:
+        '200':
+          description: Profile completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Invalid or expired token, or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
