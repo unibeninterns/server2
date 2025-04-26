@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -20,10 +18,30 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'researcher'],
+    enum: ['admin', 'researcher', 'master_student', 'faculty'],
     default: 'researcher',
   },
   faculty: {
+    type: String,
+    trim: true,
+  },
+  department: {
+    type: String,
+    trim: true,
+  },
+  academicTitle: {
+    type: String,
+    trim: true,
+  },
+  matricNumber: {
+    type: String,
+    trim: true,
+  },
+  programme: {
+    type: String,
+    trim: true,
+  },
+  phoneNumber: {
     type: String,
     trim: true,
   },
@@ -38,27 +56,6 @@ const UserSchema = new mongoose.Schema({
   profilePicture: {
     type: String,
   },
-  isActive: {
-    type: Boolean,
-    default: false,
-  },
-  refreshToken: {
-    type: String,
-    select: false,
-  },
-  inviteToken: {
-    type: String,
-  },
-  inviteTokenExpires: {
-    type: Date,
-  },
-  invitationStatus: {
-    type: String,
-    enum: ['pending', 'accepted', 'added', 'expired'],
-    default: 'pending',
-  },
-  lastLogin: {
-    type: Date,
   },
   createdAt: {
     type: Date,
@@ -70,34 +67,12 @@ const UserSchema = new mongoose.Schema({
       ref: 'Article',
     },
   ],
+  proposals: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Proposal',
+    },
+  ],
 });
 
-// Hash password before saving
-UserSchema.pre('save', async function (next) {
-  if (this.password && this.isModified('password')) {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-  }
-  next();
-});
-
-// Compare password method
-UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
-// Generate invite token
-UserSchema.methods.generateInviteToken = function () {
-  const inviteToken = crypto.randomBytes(32).toString('hex');
-
-  this.inviteToken = crypto
-    .createHash('sha256')
-    .update(inviteToken)
-    .digest('hex');
-
-  this.inviteTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-
-  return inviteToken;
-};
-
-export default mongoose.model('User', UserSchema, 'Users');
+export default mongoose.model('User', UserSchema, 'Users2');

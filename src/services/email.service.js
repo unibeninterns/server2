@@ -24,68 +24,68 @@ class EmailService {
     }
   }
 
-  async sendInvitationEmail(email, token) {
-    const inviteUrl = `${this.frontendUrl}/researcher-register/${token}`;
+  async sendProposalNotificationEmail(
+    email,
+    researcher,
+    proposalTitle,
+    submitterType
+  ) {
+    const submitterTypeText =
+      submitterType === 'faculty' ? 'Faculty Member' : "Master's Student";
+    const reviewUrl = `${this.frontendUrl}/admin/proposals`;
 
     try {
       await this.transporter.sendMail({
         from: this.emailFrom,
         to: email,
-        subject: 'Invitation to join the Research Portal',
+        subject: `New Research Proposal Submission by ${researcher}`,
         html: `
-          <h1>Research Portal Invitation</h1>
-          <p>You have been invited to join our research portal as a contributor.</p>
-          <p>Please click the link below to complete your profile:</p>
-          <a href="${inviteUrl}">${inviteUrl}</a>
-          <p>This link will expire in 30 days.</p>
+          <h1>New Research Proposal Submission</h1>
+          <p><strong>${researcher}</strong> (${submitterTypeText}) has submitted a new research proposal titled:</p>
+          <p><strong>"${proposalTitle}"</strong></p>
+          <p>Please log in to the research portal to review this proposal.</p>
+          <a href="${reviewUrl}">Review Proposals</a>
         `,
       });
-      logger.info('Invitation mail sent successfully');
+      logger.info(`Proposal notification email sent to ${email}`);
     } catch (error) {
-      logger.error('Email error details:', error);
-      throw new BadRequestError('Failed to send invitation email');
+      logger.error('Failed to send proposal notification email:', error);
+      // Not throwing to prevent proposal submission failure
     }
   }
 
-  async sendCredentialsEmail(email, password) {
-    const loginUrl = `${this.frontendUrl}/researcher-login`;
+  async sendProposalStatusUpdateEmail(
+    email,
+    researcher,
+    proposalTitle,
+    status
+  ) {
+    const statusText = {
+      approved: 'approved',
+      rejected: 'rejected',
+      revision_requested: 'returned for revision',
+      under_review: 'under review',
+    };
+
+    const statusMessage = statusText[status] || status;
+    const proposalUrl = `${this.frontendUrl}/proposals/my-proposals`;
 
     try {
       await this.transporter.sendMail({
         from: this.emailFrom,
         to: email,
-        subject: 'Your Research Portal Account Credentials',
+        subject: `Research Proposal Status Update: ${proposalTitle}`,
         html: `
-          <h1>Research Portal Account Created</h1>
-          <p>Your account has been created successfully. Please use the following credentials to log in:</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Password:</strong> ${password}</p>
-          <p>Please click the link below to log in to your account:</p>
-          <a href="${loginUrl}">${loginUrl}</a>
-          <p>If you didn't request this account, please contact our support team.</p>
+          <h1>Research Proposal Status Update</h1>
+          <p>Dear ${researcher},</p>
+          <p>Your research proposal titled <strong>"${proposalTitle}"</strong> has been <strong>${statusMessage}</strong>.</p>
+          <p>Please log in to the research portal to view more details.</p>
+          <a href="${proposalUrl}">View Your Proposals</a>
         `,
       });
+      logger.info(`Proposal status update email sent to ${email}`);
     } catch (error) {
-      throw new BadRequestError('Failed to send credentials email');
-    }
-  }
-
-  async sendNotificationEmail(email, researcher, articleTitle) {
-    try {
-      await this.transporter.sendMail({
-        from: this.emailFrom,
-        to: email,
-        subject: `New Research Published by ${researcher}`,
-        html: `
-          <h1>New Research Publication</h1>
-          <p>${researcher} has published a new article: "${articleTitle}"</p>
-          <p>Visit our research portal to read the full article.</p>
-          <a href="${this.frontendUrl}">Visit Research Portal</a>
-        `,
-      });
-    } catch (error) {
-      logger.error('Failed to send notification email:', error);
-      // Don't throw error here to prevent article publication from failing
+      logger.error('Failed to send proposal status update email:', error);
     }
   }
 }
