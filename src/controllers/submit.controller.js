@@ -213,10 +213,15 @@ class SubmitController {
   getProposalById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const proposal = await Proposal.findById(id).populate(
-      'submitter',
-      'name email faculty department academicTitle'
-    );
+    const proposal = await Proposal.findById(id)
+      .populate('submitter', 'name email academicTitle')
+      .populate({
+        path: 'submitter',
+        populate: [
+          { path: 'faculty', select: 'title code' },
+          { path: 'department', select: 'title code' },
+        ],
+      });
 
     if (!proposal) {
       throw new NotFoundError('Proposal not found');

@@ -1,5 +1,5 @@
 import Department from '../models/department.model.js';
-import logger from '../../utils/logger.js';
+import logger from '../utils/logger.js';
 
 class DepartmentController {
   getDepartments = async (req, res) => {
@@ -25,6 +25,26 @@ class DepartmentController {
       res.json(department);
     } catch (err) {
       logger.error(`Error retrieving department by code: ${err.message}`);
+      res.status(500).send('Server Error');
+    }
+  };
+
+  getDepartmentsByFaculty = async (req, res) => {
+    try {
+      const { facultyId } = req.params;
+
+      const departments = await Department.find({ faculty: facultyId });
+
+      if (!departments.length) {
+        logger.warn(`No departments found for faculty ID: ${facultyId}`);
+        return res
+          .status(404)
+          .json({ msg: 'No departments found for this faculty' });
+      }
+
+      res.json(departments);
+    } catch (err) {
+      logger.error(`Error retrieving departments by faculty: ${err.message}`);
       res.status(500).send('Server Error');
     }
   };

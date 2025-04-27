@@ -33,11 +33,13 @@ const UserSchema = new mongoose.Schema({
     required: [true, 'User type is required'],
   },
   department: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Department',
     trim: true,
   },
   faculty: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Faculty',
     trim: true,
   },
   academicTitle: {

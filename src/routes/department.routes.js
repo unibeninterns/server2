@@ -5,5 +5,9 @@ const router = express.Router();
 
 router.get('/', departmentController.getDepartments);
 router.get('/:code', departmentController.getDepartmentByCode);
+router.get(
+  '/by-faculty/:facultyId',
+  departmentController.getDepartmentsByFaculty
+);
 
 export default router;
