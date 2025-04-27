@@ -1,16 +1,16 @@
 openapi: 3.0.0
 info:
-  title: DRID Research Portal API
+  title: UNIBEN Research Submission Portal API
   description: |
-    A research management API for DRID
-    Authentication is handled via JWT access tokens and HTTP-only cookie refresh tokens.
+    API for the University of Benin Research Submission Portal
+    This API handles submission, review, and management of research proposals from staff and master's students.
   version: 1.0.0
   contact:
-    name: DRID Support
-    email: raymondomoyakhi@gmail.com
+    name: UNIBEN Research Support
+    email: support@uniben.edu
 
 servers:
-  - url: 'https://production_url/api/v1'
+  - url: 'https://api.researchportal.uniben.edu/api/v1'
     description: Production server
   - url: 'http://localhost:3000/api/v1'
     description: Development server
@@ -30,80 +30,159 @@ components:
           type: string
         name:
           type: string
-          maxLength: 50
         email:
           type: string
           format: email
-        role:
+          description: University of Benin email address
+        alternativeEmail:
           type: string
-          enum: [admin, researcher]
+          format: email
+        userType:
+          type: string
+          enum: [staff, master_student]
+        department:
+          type: string
+          description: Department ID
         faculty:
           type: string
-        title:
+          description: Faculty ID
+        academicTitle:
           type: string
-        profilePicture:
+          description: For staff members
+        matricNumber:
           type: string
-        isActive:
-          type: boolean
-        lastLogin:
+          description: For master students
+        programme:
           type: string
-          format: date-time
+          description: For master students
+        phoneNumber:
+          type: string
+        proposals:
+          type: array
+          items:
+            type: string
+            description: Proposal IDs
         createdAt:
           type: string
           format: date-time
 
-    AdminAuthResponse:
+    Proposal:
       type: object
       properties:
-        success:
-          type: boolean
-        accessToken:
+        _id:
           type: string
-        user:
-          type: object
-          properties:
-            id:
-              type: string
-            name:
-              type: string
-            email:
-              type: string
-            role:
-              type: string
-
-    ResearcherAuthResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        accessToken:
+        submitterType:
           type: string
-        user:
+          enum: [staff, master_student]
+        projectTitle:
+          type: string
+        submitter:
+          type: string
+          description: User ID of the submitter
+        problemStatement:
+          type: string
+        objectives:
+          type: string
+        methodology:
+          type: string
+        expectedOutcomes:
+          type: string
+          description: For staff proposals
+        workPlan:
+          type: string
+          description: For staff proposals
+        estimatedBudget:
+          type: number
+        coInvestigators:
+          type: array
+          description: For staff proposals
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              department:
+                type: string
+              faculty:
+                type: string
+        cvFile:
+          type: string
+          description: URL to CV file for staff proposals
+        innovationImpact:
           type: object
+          description: For master student proposals
           properties:
-            id:
+            novelty:
               type: string
-            name:
+            contribution:
               type: string
-            email:
-              type: string
-            role:
-              type: string
-            faculty:
-              type: string
-            title:
-              type: string
-            profilePicture:
-              type: string
+        interdisciplinaryRelevance:
+          type: string
+          description: For master student proposals
+        implementationTimeline:
+          type: string
+          description: For master student proposals
+        budgetFile:
+          type: string
+          description: URL to budget file for master student proposals
+        status:
+          type: string
+          enum:
+            [submitted, under_review, approved, rejected, revision_requested]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        reviewers:
+          type: array
+          items:
+            type: string
+            description: User IDs of reviewers
 
-    ErrorResponse:
+    Faculty:
       type: object
       properties:
-        success:
-          type: boolean
-        message:
+        _id:
           type: string
         code:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Department:
+      type: object
+      properties:
+        _id:
+          type: string
+        code:
+          type: string
+        title:
+          type: string
+        faculty:
+          type: string
+          description: Faculty ID
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [fail, error]
+        message:
           type: string
 
 paths:
@@ -122,46 +201,81 @@ paths:
                     type: boolean
                   message:
                     type: string
+                    example: 'UNIBEN Research Submission Portal API is running'
 
-  /auth/complete-profile/{token}:
+  /submit/staff-proposal:
     post:
-      summary: Complete researcher profile after invitation
+      summary: Submit a staff research proposal
       tags:
-        - Authentication
-      parameters:
-        - in: path
-          name: token
-          required: true
-          schema:
-            type: string
-          description: Invitation token sent to researcher's email
+        - Submission
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
               type: object
-              required: [name, faculty, bio, title]
+              required:
+                - fullName
+                - academicTitle
+                - department
+                - faculty
+                - email
+                - phoneNumber
+                - projectTitle
+                - backgroundProblem
+                - researchObjectives
+                - methodologyOverview
+                - expectedOutcomes
+                - workPlan
+                - estimatedBudget
               properties:
-                name:
+                fullName:
                   type: string
-                  description: Researcher's full name
+                academicTitle:
+                  type: string
+                department:
+                  type: string
                 faculty:
                   type: string
-                  description: Faculty or department
-                title:
+                email:
                   type: string
-                  description: Academic or professional title
-                bio:
+                  format: email
+                alternativeEmail:
                   type: string
-                  description: Interests and areas of expertise
-                profilePicture:
+                  format: email
+                phoneNumber:
+                  type: string
+                projectTitle:
+                  type: string
+                backgroundProblem:
+                  type: string
+                researchObjectives:
+                  type: string
+                methodologyOverview:
+                  type: string
+                expectedOutcomes:
+                  type: string
+                workPlan:
+                  type: string
+                estimatedBudget:
+                  type: number
+                coInvestigators:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      department:
+                        type: string
+                      faculty:
+                        type: string
+                cvFile:
                   type: string
                   format: binary
-                  description: Profile picture (JPEG, PNG, or JPG, max 5MB)
       responses:
-        '200':
-          description: Profile completed successfully
+        '201':
+          description: Staff proposal submitted successfully
           content:
             application/json:
               schema:
@@ -171,12 +285,378 @@ paths:
                     type: boolean
                   message:
                     type: string
+                  data:
+                    type: object
+                    properties:
+                      proposalId:
+                        type: string
         '400':
-          description: Invalid or expired token, or invalid input
+          description: Invalid input data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /submit/master-proposal:
+    post:
+      summary: Submit a master's student research proposal
+      tags:
+        - Submission
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - fullName
+                - matricNumber
+                - programme
+                - department
+                - faculty
+                - email
+                - phoneNumber
+                - projectTitle
+                - problemStatement
+                - objectivesOutcomes
+                - researchApproach
+                - innovationNovelty
+                - innovationContribution
+                - interdisciplinaryRelevance
+                - implementationPlan
+                - estimatedBudget
+              properties:
+                fullName:
+                  type: string
+                matricNumber:
+                  type: string
+                programme:
+                  type: string
+                department:
+                  type: string
+                faculty:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                alternativeEmail:
+                  type: string
+                  format: email
+                phoneNumber:
+                  type: string
+                projectTitle:
+                  type: string
+                problemStatement:
+                  type: string
+                objectivesOutcomes:
+                  type: string
+                researchApproach:
+                  type: string
+                innovationNovelty:
+                  type: string
+                innovationContribution:
+                  type: string
+                interdisciplinaryRelevance:
+                  type: string
+                implementationPlan:
+                  type: string
+                estimatedBudget:
+                  type: number
+                budgetFile:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Master student proposal submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      proposalId:
+                        type: string
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /submit/proposals/email/{email}:
+    get:
+      summary: Get proposals by user email
+      tags:
+        - Submission
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+          description: Email address of the user
+      responses:
+        '200':
+          description: List of proposals submitted by the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Proposal'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /submit/proposal/{id}:
+    get:
+      summary: Get proposal by ID
+      tags:
+        - Submission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Proposal ID
+      responses:
+        '200':
+          description: Proposal details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Proposal'
+        '404':
+          description: Proposal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/proposals/{id}/status:
+    put:
+      summary: Update proposal status
+      tags:
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Proposal ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [under_review, approved, rejected, revision_requested]
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Proposal status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      proposalId:
+                        type: string
+                      status:
+                        type: string
+        '400':
+          description: Invalid status value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Proposal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/proposals/{id}/reviewers:
+    post:
+      summary: Assign reviewers to a proposal
+      tags:
+        - Admin
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Proposal ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reviewerIds
+              properties:
+                reviewerIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Reviewers assigned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      proposalId:
+                        type: string
+                      reviewers:
+                        type: array
+                        items:
+                          type: string
+        '400':
+          description: Invalid reviewer IDs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Proposal not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/proposals/statistics:
+    get:
+      summary: Get proposal statistics
+      tags:
+        - Admin
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Proposal statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      byType:
+                        type: object
+                        properties:
+                          faculty:
+                            type: integer
+                          student:
+                            type: integer
+                      byStatus:
+                        type: object
+                        additionalProperties:
+                          type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /faculties:
     get:
@@ -191,14 +671,136 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    _id:
-                      type: string
-                    code:
-                      type: string
-                    title:
-                      type: string
+                  $ref: '#/components/schemas/Faculty'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /faculties/{code}:
+    get:
+      summary: Get faculty by code
+      tags:
+        - Faculties
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Faculty code
+      responses:
+        '200':
+          description: Faculty details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faculty'
+        '404':
+          description: Faculty not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /faculties/id/{id}:
+    get:
+      summary: Get faculty by ID
+      tags:
+        - Faculties
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Faculty ID
+      responses:
+        '200':
+          description: Faculty details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faculty'
+        '400':
+          description: Invalid faculty ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Faculty not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /departments:
+    get:
+      summary: Get all departments
+      tags:
+        - Departments
+      responses:
+        '200':
+          description: List of all departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /departments/{code}:
+    get:
+      summary: Get department by code
+      tags:
+        - Departments
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Department code
+      responses:
+        '200':
+          description: Department details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '404':
+          description: Department not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /departments/by-faculty/{facultyId}:
     get:
@@ -211,7 +813,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Faculty ID to filter departments
+          description: Faculty ID
       responses:
         '200':
           description: List of departments for the specified faculty
@@ -220,13 +822,16 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    _id:
-                      type: string
-                    code:
-                      type: string
-                    title:
-                      type: string
-                    faculty:
-                      type: string
+                  $ref: '#/components/schemas/Department'
+        '404':
+          description: No departments found for this faculty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
