@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 import logger from '../utils/logger.js';
-import { BadRequestError } from '../utils/customErrors.js';
+import validateEnv from '../utils/validateEnv.js';
+
+validateEnv();
 
 class EmailService {
   constructor() {

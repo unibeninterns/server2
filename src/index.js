@@ -6,12 +6,11 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createAdminUser } from './scripts/createAdmin.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const uploadsDir = path.join(__dirname, 'uploads');
 const profileUploadDir = path.join(uploadsDir, 'profiles');
-const coverPicUploadDir = path.join(uploadsDir, 'cover_pic');
+const documentsUploadDir = path.join(uploadsDir, 'documents');
 
 // Create directories if they don't exist
 if (!fs.existsSync(uploadsDir)) {
@@ -19,7 +18,7 @@ if (!fs.existsSync(uploadsDir)) {
   logger.info(`Uploads directory created: ${uploadsDir}`);
 }
 
-[profileUploadDir, coverPicUploadDir].forEach((dir) => {
+[profileUploadDir, documentsUploadDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     logger.info(`Directory created: ${dir}`);
@@ -33,13 +32,6 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 const startServer = async () => {
   try {
     await connectDB();
-
-    try {
-      await createAdminUser();
-    } catch (adminError) {
-      logger.error('Admin creation error:', adminError);
-    }
-
     const server = app.listen(PORT, () => {
       const { port } = server.address();
       logger.info(

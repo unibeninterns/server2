@@ -16,6 +16,7 @@ const validateEnv = () => {
     SMTP_USER: str(),
     SMTP_PASS: str(),
     EMAIL_FROM: email(),
+    REVIEWER_EMAIL: email(),
     API_URL: url(),
   });
 };

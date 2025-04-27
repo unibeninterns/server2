@@ -1,4 +1,4 @@
-import Department from '../models/department.model.js';
+import Department from '../model/department.model.js';
 import logger from '../utils/logger.js';
 
 class DepartmentController {

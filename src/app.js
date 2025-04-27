@@ -30,7 +30,6 @@ app.use(compression());
 app.use(helmet(helmetOptions));
 app.use(cors(corsOptions));
 app.use(rateLimit(rateLimitOptions));
-app.use(cookieParser());
 app.use(
   morgan('combined', {
     stream: {
