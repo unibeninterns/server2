@@ -1,4 +1,3 @@
-// src/model/proposal.model.js
 import mongoose from 'mongoose';
 
 const ProposalSchema = new mongoose.Schema({
@@ -61,7 +60,7 @@ const ProposalSchema = new mongoose.Schema({
   },
   interdisciplinaryRelevance: String,
   implementationTimeline: String,
-  budgetFile: {
+  docFile: {
     type: String,
   },
 

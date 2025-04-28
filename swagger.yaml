@@ -122,7 +122,7 @@ components:
         implementationTimeline:
           type: string
           description: For master student proposals
-        budgetFile:
+        docFile:
           type: string
           description: URL to budget file for master student proposals
         status:
@@ -368,7 +368,7 @@ paths:
                   type: string
                 estimatedBudget:
                   type: number
-                budgetFile:
+                docFile:
                   type: string
                   format: binary
       responses:

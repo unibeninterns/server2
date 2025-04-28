@@ -1,4 +1,3 @@
-// src/routes/submit.routes.js
 import express from 'express';
 import submitController from '../controllers/submit.controller.js';
 import multer from 'multer';
@@ -19,7 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Different destinations based on file type
-    if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
+    if (file.fieldname === 'cvFile' || file.fieldname === 'docFile') {
       cb(null, path.join(__dirname, '../uploads/documents/'));
     } else {
       cb(null, path.join(__dirname, '../uploads/'));
@@ -32,7 +31,7 @@ export const storage = multer.diskStorage({
 
 export const fileFilter = (req, file, cb) => {
   // Check file types
-  if (file.fieldname === 'cvFile' || file.fieldname === 'budgetFile') {
+  if (file.fieldname === 'cvFile' || file.fieldname === 'docFile') {
     // Document files - PDF, DOC, DOCX
     const allowedTypes = [
       'application/pdf',
@@ -60,7 +59,7 @@ export const upload = multer({
 
 const documentUpload = upload.fields([
   { name: 'cvFile', maxCount: 1 },
-  { name: 'budgetFile', maxCount: 1 },
+  { name: 'docFile', maxCount: 1 },
 ]);
 
 // Apply rate limiting to all submission endpoints
