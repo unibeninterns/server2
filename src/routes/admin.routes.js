@@ -1,31 +1,48 @@
-import express from 'express';
-import adminController from '../controllers/admin.controller.js';
-import { rateLimiter } from '../middleware/auth.middleware.js';
+import express from "express";
+import adminController from "../controllers/admin.controller.js";
+import {
+    authenticateAdminToken,
+    rateLimiter
+} from "../middleware/auth.middleware.js";
+import validateRequest from "../middleware/validateRequest.js";
+import { proposalStatusUpdateSchema } from "../validators/admin.validators.js";
 
 const router = express.Router();
 
-// Apply rate limiting to all admin endpoints
+// Apply rate limiting and admin authentication to all admin endpoints
 const adminRateLimiter = rateLimiter(100, 60 * 60 * 1000); // 100 requests per hour
+
+// Get all proposals (with pagination and filtering)
+router.get(
+    "/proposals",
+    authenticateAdminToken,
+    adminRateLimiter,
+    adminController.getAllProposals
+);
+
+// Get proposal by ID
+router.get(
+    "/proposals/:id",
+    authenticateAdminToken,
+    adminRateLimiter,
+    adminController.getProposalById
+);
 
 // Update proposal status
 router.put(
-  '/proposals/:id/status',
-  adminRateLimiter,
-  adminController.updateProposalStatus
-);
-
-// Assign reviewers to proposal
-router.post(
-  '/proposals/:id/reviewers',
-  adminRateLimiter,
-  adminController.assignReviewers
+    "/proposals/:id/status",
+    authenticateAdminToken,
+    adminRateLimiter,
+    validateRequest(proposalStatusUpdateSchema),
+    adminController.updateProposalStatus
 );
 
 // Get proposal statistics
 router.get(
-  '/proposals/statistics',
-  adminRateLimiter,
-  adminController.getProposalStatistics
+    "/statistics",
+    authenticateAdminToken,
+    adminRateLimiter,
+    adminController.getProposalStatistics
 );
 
 export default router;

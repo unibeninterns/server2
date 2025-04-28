@@ -3,6 +3,7 @@ import submitRoutes from './submit.routes.js';
 import facultyRoutes from './faculty.routes.js';
 import departmentRoutes from './department.routes.js';
 import adminRoutes from './admin.routes.js';
+import authRoutes from './auth.routes.js'
 
 const router = Router();
 
@@ -11,6 +12,7 @@ router.use('/submit', submitRoutes);
 router.use('/faculties', facultyRoutes);
 router.use('/departments', departmentRoutes);
 router.use('/admin', adminRoutes);
+router.use('/auth', authRoutes);
 
 // Root route
 router.get('/', (req, res) => {
