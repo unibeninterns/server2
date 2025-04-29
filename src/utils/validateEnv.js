@@ -18,6 +18,9 @@ const validateEnv = () => {
     EMAIL_FROM: email(),
     REVIEWER_EMAIL: email(),
     API_URL: url(),
+    ADMIN_NAME: str(),
+    ADMIN_EMAIL: email(),
+    ADMIN_PASSWORD: str(),
   });
 };
 

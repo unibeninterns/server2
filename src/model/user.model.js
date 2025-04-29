@@ -1,5 +1,6 @@
 // src/model/user.model.js
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -26,6 +27,10 @@ const UserSchema = new mongoose.Schema({
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       'Please provide a valid email address',
     ],
+  },
+  password: {
+    type: String,
+    select: false,
   },
   userType: {
     type: String,
@@ -70,5 +75,10 @@ const UserSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
+// Compare password method
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 export default mongoose.model('User', UserSchema, 'Users_2');
