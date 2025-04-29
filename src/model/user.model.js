@@ -32,6 +32,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     select: false,
   },
+  role: {
+    type: String,
+    enum: ['admin', 'researcher'],
+    default: 'researcher',
+    required: true,
+  },
   userType: {
     type: String,
     enum: ['staff', 'master_student'],
@@ -74,6 +80,14 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+UserSchema.pre('save', async function (next) {
+  if (this.password && this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
+  next();
 });
 
 // Compare password method

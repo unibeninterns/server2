@@ -25,12 +25,10 @@ export const proposalStatusUpdateSchema = z.object({
 export const adminLoginSchema = z.object({
   body: z.object({
     email: z
-      .string()
-      .email('Invalid email address')
-      .regex(
-        /^.+@.+\.uniben\.edu$/,
-        'Please provide a valid UNIBEN email address'
-      ),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+      .string({ required_error: 'Email is required' })
+      .email('Invalid email address'),
+    password: z
+      .string({ required_error: 'Password is required' })
+      .min(6, 'Password must be at least 6 characters'),
   }),
 });
