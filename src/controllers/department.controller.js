@@ -48,6 +48,28 @@ class DepartmentController {
       res.status(500).send('Server Error');
     }
   };
+
+  getDepartmentsByFacultyCode = async (req, res) => {
+    try {
+      const { facultyCode } = req.params;
+
+      const departments = await Department.find({ faculty: facultyCode });
+
+      if (!departments.length) {
+        logger.warn(`No departments found for faculty code: ${facultyCode}`);
+        return res
+          .status(404)
+          .json({ msg: 'No departments found for this faculty' });
+      }
+
+      res.json(departments);
+    } catch (err) {
+      logger.error(
+        `Error retrieving departments by faculty code: ${err.message}`
+      );
+      res.status(500).send('Server Error');
+    }
+  };
 }
 
 export default new DepartmentController();
