@@ -6,9 +6,16 @@ const ProposalSchema = new mongoose.Schema({
     enum: ['staff', 'master_student'],
     required: [true, 'Submitter type is required'],
   },
+
+  // common
   projectTitle: {
     type: String,
-    required: [true, 'Project title is required'],
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Project title is required',
+    ],
     trim: true,
   },
   submitter: {
@@ -16,54 +23,122 @@ const ProposalSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Submitter is required'],
   },
-
-  // Common fields
   problemStatement: {
     type: String,
-    required: [true, 'Problem statement is required'],
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Problem statement is required',
+    ],
   },
   objectives: {
     type: String,
-    required: [true, 'Research objectives are required'],
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Research objectives are required',
+    ],
   },
   methodology: {
     type: String,
-    required: [true, 'Methodology is required'],
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Methodology is required',
+    ],
   },
 
-  // Staff specific fields
+  // ─── staff-only ───────────────────────────────────────────────────────────────
   expectedOutcomes: {
     type: String,
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Expected outcomes are required for staff proposals',
+    ],
   },
   workPlan: {
     type: String,
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Work plan is required for staff proposals',
+    ],
   },
   estimatedBudget: {
     type: Number,
-    required: [true, 'Estimated budget is required'],
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'Estimated budget is required for staff proposals',
+    ],
   },
   coInvestigators: [
     {
       name: String,
       department: String,
       faculty: String,
+      // you could even make each sub-field conditional if you like…
     },
   ],
   cvFile: {
     type: String,
+    required: [
+      function () {
+        return this.submitterType === 'staff';
+      },
+      'CV file is required for staff proposals',
+    ],
   },
 
-  // Master student specific fields
-  innovationImpact: {
-    novelty: String,
-    contribution: String,
+  // ─── master_student-only ───────────────────────────────────────────────────────
+  /*innovationImpact: {
+    novelty: {
+      type: String,
+      required: [
+        function() { return this.submitterType === 'master_student'; },
+        'Novelty is required for master student proposals'
+      ]
+    },
+    contribution: {
+      type: String,
+      required: [
+        function() { return this.submitterType === 'master_student'; },
+        'Contribution is required for master student proposals'
+      ]
+    }
   },
-  interdisciplinaryRelevance: String,
-  implementationTimeline: String,
+  interdisciplinaryRelevance: {
+    type: String,
+    required: [
+      function() { return this.submitterType === 'master_student'; },
+      'Interdisciplinary relevance is required for master student proposals'
+    ]
+  },
+  implementationTimeline: {
+    type: String,
+    required: [
+      function() { return this.submitterType === 'master_student'; },
+      'Implementation timeline is required for master student proposals'
+    ]
+  }, */
   docFile: {
     type: String,
+    required: [
+      function () {
+        return this.submitterType === 'master_student';
+      },
+      'Document file is required for master student proposals',
+    ],
   },
 
+  // status & timestamps
   status: {
     type: String,
     enum: [
@@ -75,17 +150,11 @@ const ProposalSchema = new mongoose.Schema({
     ],
     default: 'submitted',
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
 });
 
-// Update the updatedAt field on save
+// keep updatedAt fresh
 ProposalSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();

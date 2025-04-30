@@ -99,8 +99,7 @@ class SubmitController {
 
   // Submit master student proposal
   submitMasterStudentProposal = asyncHandler(async (req, res) => {
-    const { fullName, email, alternativeEmail, phoneNumber } =
-      req.validated.body;
+    const { fullName, email, alternativeEmail, phoneNumber } = req.body;
 
     // Check if user already exists or create new user
     let user = await User.findOne({ email });

@@ -78,7 +78,6 @@ router.post(
   '/master-proposal',
   submissionRateLimiter,
   documentUpload,
-  validateRequest(masterStudentProposalSchema),
   submitController.submitMasterStudentProposal
 );
 
