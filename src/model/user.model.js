@@ -70,6 +70,10 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     required: [true, 'Phone number is required'],
   },
+  refreshToken: {
+    type: String,
+    select: false,
+  },
   proposals: [
     {
       type: mongoose.Schema.Types.ObjectId,
