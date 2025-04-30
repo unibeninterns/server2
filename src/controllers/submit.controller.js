@@ -24,7 +24,9 @@ class SubmitController {
       workPlan,
       estimatedBudget,
       coInvestigators,
-    } = req.validated.body;
+    } = req.body;
+
+    logger.info('Received staff proposal data:', req.body);
 
     // Check if user already exists or create new user
     let user = await User.findOne({ email });

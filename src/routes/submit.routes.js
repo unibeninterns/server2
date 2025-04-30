@@ -70,7 +70,6 @@ router.post(
   '/staff-proposal',
   submissionRateLimiter,
   documentUpload,
-  validateRequest(staffProposalSchema),
   submitController.submitStaffProposal
 );
 
