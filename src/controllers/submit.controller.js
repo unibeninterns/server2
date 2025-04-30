@@ -26,7 +26,19 @@ class SubmitController {
       coInvestigators,
     } = req.body;
 
-    logger.info('Received staff proposal data:', req.body);
+    let parsedCoInvestigators = [];
+    if (coInvestigators) {
+      try {
+        parsedCoInvestigators =
+          typeof coInvestigators === 'string'
+            ? JSON.parse(coInvestigators)
+            : coInvestigators;
+      } catch (error) {
+        logger.error('Failed to parse coInvestigators:', error);
+        // Default to empty array if parsing fails
+        parsedCoInvestigators = [];
+      }
+    }
 
     // Check if user already exists or create new user
     let user = await User.findOne({ email });
@@ -57,8 +69,8 @@ class SubmitController {
       methodology: methodologyOverview,
       expectedOutcomes,
       workPlan,
-      estimatedBudget,
-      coInvestigators: coInvestigators || [],
+      estimatedBudget: Number(estimatedBudget),
+      coInvestigators: parsedCoInvestigators,
     });
 
     // Handle CV file upload if present
