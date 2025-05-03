@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [
-      /^.+@.+\.uniben\.edu$/,
+      /^.+@(.+\.)*uniben\.edu$/,
       'Please provide a valid UNIBEN email address',
     ],
   },
