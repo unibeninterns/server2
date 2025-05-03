@@ -9,10 +9,13 @@ class EmailService {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -27,31 +30,66 @@ class EmailService {
   }
 
   async sendProposalNotificationEmail(
-    email,
+    reviewerEmails,
     researcher,
     proposalTitle,
     submitterType
   ) {
     const submitterTypeText =
-      submitterType === 'faculty' ? 'Faculty Member' : "Master's Student";
+      submitterType === 'staff' ? 'Staff Member' : "Master's Student";
     const reviewUrl = `${this.frontendUrl}/admin/proposals`;
+
+    // Handle comma-separated emails or single email
+    const recipients = Array.isArray(reviewerEmails)
+      ? reviewerEmails
+      : reviewerEmails.split(',').map((email) => email.trim());
+
+    try {
+      await this.transporter.sendMail({
+        from: this.emailFrom,
+        to: recipients.join(','),
+        subject: `New Research Proposal Submission by ${researcher}`,
+        html: `
+        <h1>New Research Proposal Submission</h1>
+        <p><strong>${researcher}</strong> (${submitterTypeText}) has submitted a new research proposal titled:</p>
+        <p><strong>"${proposalTitle}"</strong></p>
+        <p>Please log in to the research portal to review this proposal.</p>
+        <a href="${reviewUrl}">Review Proposals</a>
+      `,
+      });
+      logger.info(
+        `Proposal notification email sent to reviewers: ${recipients.join(', ')}`
+      );
+    } catch (error) {
+      logger.error('Failed to send proposal notification email:', error);
+      // Not throwing to prevent proposal submission failure
+    }
+  }
+
+  async sendSubmissionConfirmationEmail(
+    email,
+    name,
+    proposalTitle,
+    submitterType
+  ) {
+    const submitterTypeText =
+      submitterType === 'staff' ? 'Staff' : "Master's Student";
 
     try {
       await this.transporter.sendMail({
         from: this.emailFrom,
         to: email,
-        subject: `New Research Proposal Submission by ${researcher}`,
+        subject: `Research Proposal Submission Confirmation`,
         html: `
-          <h1>New Research Proposal Submission</h1>
-          <p><strong>${researcher}</strong> (${submitterTypeText}) has submitted a new research proposal titled:</p>
-          <p><strong>"${proposalTitle}"</strong></p>
-          <p>Please log in to the research portal to review this proposal.</p>
-          <a href="${reviewUrl}">Review Proposals</a>
+          <h1>Proposal Submission Confirmation</h1>
+          <p>Dear ${name},</p>
+          <p>Thank you for submitting your ${submitterTypeText} research proposal${submitterType === 'staff' && proposalTitle ? ` titled <strong>"${proposalTitle}"</strong>` : ''}.</p>
+          <p>Your proposal has been received and is now under review.</p>
         `,
       });
-      logger.info(`Proposal notification email sent to ${email}`);
+      logger.info(`Submission confirmation email sent to ${email}`);
     } catch (error) {
-      logger.error('Failed to send proposal notification email:', error);
+      logger.error('Failed to send submission confirmation email:', error);
       // Not throwing to prevent proposal submission failure
     }
   }

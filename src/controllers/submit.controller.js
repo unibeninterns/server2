@@ -89,14 +89,23 @@ class SubmitController {
 
     // Send notification email to reviewers
     try {
+      const reviewerEmails =
+        process.env.REVIEWER_EMAILS || 'reviewer@example.com';
       await emailService.sendProposalNotificationEmail(
-        process.env.REVIEWER_EMAIL || 'reviewer@example.com',
+        reviewerEmails,
         user.name,
         projectTitle,
         'staff'
       );
+
+      await emailService.sendSubmissionConfirmationEmail(
+        email,
+        fullName,
+        projectTitle,
+        'staff'
+      );
     } catch (error) {
-      logger.error('Failed to send notification email:', error);
+      logger.error('Failed to send emails:', error);
       // Don't throw error to prevent proposal submission from failing
     }
 
@@ -151,14 +160,24 @@ class SubmitController {
 
     // Send notification email to reviewers
     try {
+      const reviewerEmails =
+        process.env.REVIEWER_EMAILS || 'reviewer@example.com';
       await emailService.sendProposalNotificationEmail(
-        process.env.REVIEWER_EMAIL || 'reviewer@example.com',
+        reviewerEmails,
         user.name,
         'Master Student Proposal',
         'master_student'
       );
+
+      // Send confirmation to submitter
+      await emailService.sendSubmissionConfirmationEmail(
+        email,
+        fullName,
+        'Master Student Proposal',
+        'master_student'
+      );
     } catch (error) {
-      logger.error('Failed to send notification email:', error);
+      logger.error('Failed to send emails:', error);
       // Don't throw error to prevent proposal submission from failing
     }
 
