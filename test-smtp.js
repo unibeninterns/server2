@@ -48,7 +48,7 @@ async function testEmail() {
 
     // Send test email
     const testRecipient =
-      process.env.TEST_EMAIL_TO || 'raymondomoyakhi@gmail.com'; // Change this
+      process.env.TEST_EMAIL_TO || 'raymond.omoyakhi@physci.uniben.edu'; // Change this
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: testRecipient,

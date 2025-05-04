@@ -47,11 +47,81 @@ class EmailService {
         to: recipients.join(','),
         subject: `New Research Proposal Submission by ${researcher}`,
         html: `
+        <html>
+<head>
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            color: #AA319A; /* Fuchsia/purple accent color */
+            border-bottom: 2px solid #c724b1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .proposal-title {
+            font-size: 18px;
+            color: #AA319A;
+            padding: 10px;
+            background-color: #f8e0f5;
+            border-left: 3px solid #AA319A;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #AA319A;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
         <h1>New Research Proposal Submission</h1>
+    </div>
+    
+    <div class="content">
         <p><strong>${researcher}</strong> (${submitterTypeText}) has submitted a new research proposal titled:</p>
-        <p><strong>"${proposalTitle}"</strong></p>
-        <p>Please log in to the research portal to review this proposal.</p>
-        <a href="${reviewUrl}">Review Proposals</a>
+        
+        <div class="proposal-title">"${proposalTitle}"</div>
+        
+        <p>Please log in to the research portal to review this proposal at your earliest convenience.</p>
+        
+        <a href="${reviewUrl}" class="button">Review Proposal Now</a>
+        
+        <p>For any questions regarding the review process, please contact the Research Directorate.</p>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Directorate of Research, Innovation and Development</strong></p>
+        <p>University of Benin • PMB 1154, Benin City, Nigeria</p>
+    </div>
+</body>
+</html>
       `,
       });
       logger.info(
@@ -78,10 +148,62 @@ class EmailService {
         to: email,
         subject: `Research Proposal Submission Confirmation`,
         html: `
-          <h1>Proposal Submission Confirmation</h1>
-          <p>Dear ${name},</p>
-          <p>Thank you for submitting your ${submitterTypeText} research proposal${submitterType === 'staff' && proposalTitle ? ` titled <strong>"${proposalTitle}"</strong>` : ''}.</p>
-          <p>Your proposal has been received and is now under review.</p>
+          <html>
+<head>
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            color: #AA319A;
+            border-bottom: 2px solid #AA319A;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 10px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666666;
+        }
+        .highlight {
+            color: #AA319A;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Proposal Submission Confirmation</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear ${name},</p>
+        
+        <p>Thank you for submitting your ${submitterTypeText} research proposal${submitterType === 'staff' && proposalTitle ? ` titled <strong class="highlight">"${proposalTitle}"</strong>` : ''}.</p>
+        
+        <p>Your proposal has been received and is now under review by our committee.</p>
+        
+        <p>We appreciate your contribution to the research community at the University of Benin. You will receive further communication regarding the status of your proposal as soon as possible</p>
+    </div>
+    
+    <div class="footer">
+        <p><strong>Best regards,</strong></p>
+        <p>Directorate of Research, Innovation and Development<br>
+        University of Benin<br>
+        PMB 1154, Benin City, Nigeria</p>
+    </div>
+</body>
+</html>
         `,
       });
       logger.info(`Submission confirmation email sent to ${email}`);

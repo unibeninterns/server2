@@ -1,14 +1,5 @@
 import dotenv from 'dotenv';
-import {
-  cleanEnv,
-  str,
-  port,
-  url,
-  email,
-  num,
-  bool,
-  makeValidator,
-} from 'envalid';
+import { cleanEnv, str, port, url, email, num, makeValidator } from 'envalid';
 dotenv.config();
 
 const validateEnv = () => {
@@ -20,6 +11,16 @@ const validateEnv = () => {
       }
     });
     return emails;
+  });
+
+  const extendedEmail = makeValidator((input) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Extract email from "Display Name <email@domain.com>" format if present
+    const emailPart = input.match(/<([^>]+)>/)?.[1] || input;
+    if (!emailRegex.test(emailPart)) {
+      throw new Error(`Invalid email address: "${emailPart}"`);
+    }
+    return input;
   });
 
   cleanEnv(process.env, {
@@ -37,8 +38,7 @@ const validateEnv = () => {
     SMTP_PORT: port(),
     SMTP_USER: str(),
     SMTP_PASS: str(),
-    SMTP_SECURE: bool({ default: false }),
-    EMAIL_FROM: email(),
+    EMAIL_FROM: extendedEmail(),
     REVIEWER_EMAILS: emailsList(),
     ADMIN_NAME: str(),
     ADMIN_EMAIL: email(),
