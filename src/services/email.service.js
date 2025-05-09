@@ -61,7 +61,7 @@ class EmailService {
         }
         .header {
             color: #AA319A; /* Fuchsia/purple accent color */
-            border-bottom: 2px solid #c724b1;
+            border-bottom: 2px solid #AA319A;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
