@@ -47,7 +47,8 @@ async function testEmail() {
     console.log('✅ SMTP connection verified!');
 
     // Send test email
-    const testRecipient = process.env.TEST_EMAIL_TO || 'osarojerry9@gmail.com'; // Change this
+    const testRecipient =
+      process.env.TEST_EMAIL_TO || 'raymond.omoyakhi@physci.uniben.edu'; // Change this
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: testRecipient,

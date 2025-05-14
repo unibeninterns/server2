@@ -1,5 +1,3 @@
-// src/scripts/createAdmin.js
-import mongoose from 'mongoose';
 import User from '../model/user.model.js';
 import connectDB from '../db/database.js';
 import validateEnv from '../utils/validateEnv.js';
