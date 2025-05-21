@@ -1,11 +1,11 @@
-import express from "express";
-import adminController from "../controllers/admin.controller.js";
+import express from 'express';
+import adminController from '../controllers/admin.controller.js';
 import {
-    authenticateAdminToken,
-    rateLimiter
-} from "../middleware/auth.middleware.js";
-import validateRequest from "../middleware/validateRequest.js";
-import { proposalStatusUpdateSchema } from "../validators/admin.validators.js";
+  authenticateAdminToken,
+  rateLimiter,
+} from '../middleware/auth.middleware.js';
+import validateRequest from '../middleware/validateRequest.js';
+import { proposalStatusUpdateSchema } from '../validators/admin.validators.js';
 
 const router = express.Router();
 
@@ -14,35 +14,42 @@ const adminRateLimiter = rateLimiter(100, 60 * 60 * 1000); // 100 requests per h
 
 // Get all proposals (with pagination and filtering)
 router.get(
-    "/proposals",
-    authenticateAdminToken,
-    adminRateLimiter,
-    adminController.getAllProposals
+  '/proposals',
+  authenticateAdminToken,
+  adminRateLimiter,
+  adminController.getAllProposals
 );
 
 // Get proposal by ID
 router.get(
-    "/proposals/:id",
-    authenticateAdminToken,
-    adminRateLimiter,
-    adminController.getProposalById
+  '/proposals/:id',
+  authenticateAdminToken,
+  adminRateLimiter,
+  adminController.getProposalById
 );
 
 // Update proposal status
 router.put(
-    "/proposals/:id/status",
-    authenticateAdminToken,
-    adminRateLimiter,
-    validateRequest(proposalStatusUpdateSchema),
-    adminController.updateProposalStatus
+  '/proposals/:id/status',
+  authenticateAdminToken,
+  adminRateLimiter,
+  validateRequest(proposalStatusUpdateSchema),
+  adminController.updateProposalStatus
+);
+
+router.get(
+  '/faculties-with-proposals',
+  authenticateAdminToken,
+  adminRateLimiter,
+  adminController.getFacultiesWithProposals
 );
 
 // Get proposal statistics
 router.get(
-    "/statistics",
-    authenticateAdminToken,
-    adminRateLimiter,
-    adminController.getProposalStatistics
+  '/statistics',
+  authenticateAdminToken,
+  adminRateLimiter,
+  adminController.getProposalStatistics
 );
 
 export default router;
